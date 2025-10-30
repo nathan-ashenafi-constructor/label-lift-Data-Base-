@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product - LabelLift</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <style>
+        .form-container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #2ecc71;
+            box-shadow: 0 0 5px rgba(46, 204, 113, 0.3);
+        }
+        .btn-submit {
+            background: #2ecc71;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            width: 100%;
+        }
+        .btn-submit:hover {
+            background: #27ae60;
+        }
+        h1 { color: #2ecc71; text-align: center; margin-bottom: 30px; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <img src="img/logo.png" alt="LabelLift Logo" class="logo">
+                <span class="brand-name">LabelLift</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="maintenance.html">Maintenance</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="form-container">
+        <h1>Add New Product</h1>
+        <form method="POST" action="/products/add">
+            <div class="form-group">
+                <label for="name">Product Name:</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="barcode">Barcode:</label>
+                <input type="text" id="barcode" name="barcode" required>
+            </div>
+            <div class="form-group">
+                <label for="size_of_serving">Serving Size:</label>
+                <input type="text" id="size_of_serving" name="size_of_serving">
+            </div>
+            <div class="form-group">
+                <label for="category_id">Category ID:</label>
+                <input type="number" id="category_id" name="category_id" required>
+            </div>
+            <div class="form-group">
+                <label for="brand_id">Brand ID:</label>
+                <input type="number" id="brand_id" name="brand_id" required>
+            </div>
+            <button type="submit" class="btn-submit">Add Product</button>
+        </form>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2024 LabelLift. Database Maintenance System</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
