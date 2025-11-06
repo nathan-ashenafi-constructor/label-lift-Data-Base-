@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Scanner - Nutrition Facts</title>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+    <script src="nutrition_extractor.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .scanner-section {
+            margin-bottom: 30px;
+        }
+        
+        #video-container {
+            position: relative;
+            width: 100%;
+            max-width: 480px;  /* Narrower for vertical orientation */
+            margin: 20px auto;
+            border-radius: 10px;
+            overflow: hidden;
+            display: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        #video {
+            width: 100%;
+            display: block;
+            aspect-ratio: 3/4;  /* Vertical aspect ratio */
+            object-fit: cover;
+        }
+        
+        /* Rectangle overlay for nutrition label */
+        .scan-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 85%;
+            height: 70%;
+            border: 3px solid #2ecc71;
+            border-radius: 10px;
+            pointer-events: none;
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+        }
+        
+        .scan-overlay::before {
+            content: 'Position nutrition label here';
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(46, 204, 113, 0.9);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 5px;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+        
+        #canvas {
+            display: none;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        
+        button {
+            padding: 12px 30px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(56, 239, 125, 0.4);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(235, 51, 73, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .result-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .result-section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .scanned-text {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .nutrition-facts {
+            background: white;
+            border: 2px solid #000;
+            padding: 20px;
+            font-family: 'Arial', sans-serif;
+            max-width: 400px;
+            margin: 20px auto;
+        }
+        
+        .nutrition-facts h3 {
+            font-size: 2.5em;
+            margin: 0 0 5px 0;
+            font-weight: 900;
+        }
+        
+        .serving-info {
+            border-bottom: 10px solid #000;
+            padding-bottom: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .calories {
+            border-bottom: 5px solid #000;
+            padding: 5px 0;
+        }
+        
+        .calories .amount {
+            font-size: 2em;
+            font-weight: 900;
+        }
+        
+        .nutrient-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+            border-bottom: 1px solid #999;
+        }
+        
+        .nutrient-row.thick-border {
+            border-bottom: 5px solid #000;
+        }
+        
+        .nutrient-row .label {
+            font-weight: 600;
+        }
+        
+        .fitness-score {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .fitness-score .score {
+            font-size: 3em;
+            font-weight: 900;
+        }
+        
+        .alternatives {
+            margin-top: 20px;
+        }
+        
+        .alternative-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #38ef7d;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .alternative-item h4 {
+            color: #11998e;
+            margin-bottom: 10px;
+        }
+        
+        .improvement {
+            color: #38ef7d;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        .empty-state svg {
+            width: 100px;
+            height: 100px;
+            opacity: 0.3;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 0;
+                border-radius: 0;
+            }
+            
+            header h1 {
+                font-size: 1.5em;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📷 Nutrition Facts Scanner</h1>
+            <p>Point your camera at a nutrition label to scan and analyze</p>
+        </header>
+        
+        <div class="content">
+            <!-- Scanner Controls -->
+            <div class="scanner-section">
+                <div class="btn-group">
+                    <button id="start-btn" class="btn-primary" onclick="startScanner()">
+                        📸 Start Camera
+                    </button>
+                    <button id="capture-btn" class="btn-success" onclick="captureImage()" disabled>
+                        ✓ Capture & Scan
+                    </button>
+                    <button id="stop-btn" class="btn-danger" onclick="stopScanner()" disabled>
+                        ⏹ Stop Camera
+                    </button>
+                </div>
+                
+                <div id="video-container">
+                    <video id="video" autoplay playsinline></video>
+                    <div class="scan-overlay"></div>
+                </div>
+                <canvas id="canvas"></canvas>
+            </div>
+            
+            <!-- Scanned Text -->
+            <div id="text-section" class="result-section" style="display: none;">
+                <h2>📝 Scanned Text</h2>
+                <div id="scanned-text" class="scanned-text"></div>
+                <div class="btn-group">
+                    <button class="btn-secondary" onclick="extractNutrition()">
+                        🔍 Extract Nutrition Facts
+                    </button>
+                    <button class="btn-secondary" onclick="clearText()">
+                        🗑️ Clear Text
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Nutrition Facts -->
+            <div id="nutrition-section" class="result-section" style="display: none;">
+                <h2>📊 Nutrition Information</h2>
+                <div id="nutrition-display"></div>
+                <div class="btn-group">
+                    <button class="btn-primary" onclick="getAlternatives('fitness')">
+                        💪 Find Fitness Alternatives
+                    </button>
+                    <button class="btn-primary" onclick="getAlternatives('casual')">
+                        🍃 Find Low-Calorie Options
+                    </button>
+                    <button class="btn-primary" onclick="getLowerSodium()">
+                        🧂 Find Lower Sodium
+                    </button>
+                    <button class="btn-secondary" onclick="clearNutrition()">
+                        🗑️ Clear Nutrition
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Alternatives -->
+            <div id="alternatives-section" class="result-section" style="display: none;">
+                <h2>✨ Healthier Alternatives</h2>
+                <div id="alternatives-display"></div>
+                <div class="btn-group">
+                    <button class="btn-secondary" onclick="clearAlternatives()">
+                        🗑️ Clear Alternatives
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Loading Indicator -->
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Processing image...</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let stream = null;
+        let scannedText = '';
+        let nutritionData = null;
+        let isAutoScanning = false;
+        let autoScanInterval = null;
+        
+        // Start the camera
+        async function startScanner() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'environment',
+                        width: { ideal: 1080 },   // Swapped for portrait
+                        height: { ideal: 1920 },  // Taller than wide
+                        aspectRatio: { ideal: 3/4 }  // Portrait ratio
+                    } 
+                });
+                
+                const video = document.getElementById('video');
+                video.srcObject = stream;
+                
+                document.getElementById('video-container').style.display = 'block';
+                document.getElementById('start-btn').disabled = true;
+                document.getElementById('capture-btn').disabled = false;
+                document.getElementById('stop-btn').disabled = false;
+            } catch (error) {
+                alert('Error accessing camera: ' + error.message);
+            }
+        }
+        
+        // Stop the camera
+        function stopScanner() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            
+            if (autoScanInterval) {
+                clearInterval(autoScanInterval);
+                autoScanInterval = null;
+            }
+            isAutoScanning = false;
+            
+            document.getElementById('video-container').style.display = 'none';
+            document.getElementById('start-btn').disabled = false;
+            document.getElementById('capture-btn').disabled = true;
+            document.getElementById('stop-btn').disabled = true;
+        }
+        
+        // Capture image and run OCR
+        async function captureImage() {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0);
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            
+            // Convert canvas to image
+            canvas.toBlob(async (blob) => {
+                try {
+                    // Run OCR using Tesseract.js
+                    const result = await Tesseract.recognize(blob, 'eng', {
+                        logger: m => console.log(m)
+                    });
+                    
+                    scannedText = result.data.text;
+                    displayScannedText(scannedText);
+                    
+                    document.getElementById('loading').style.display = 'none';
+                } catch (error) {
+                    alert('Error processing image: ' + error.message);
+                    document.getElementById('loading').style.display = 'none';
+                }
+            });
+        }
+        
+        // Display scanned text
+        function displayScannedText(text) {
+            document.getElementById('scanned-text').textContent = text;
+            document.getElementById('text-section').style.display = 'block';
+        }
+        
+        // Extract nutrition from scanned text
+        function extractNutrition() {
+            if (!scannedText) {
+                alert('No text to extract from!');
+                return;
+            }
+            
+            const textLines = scannedText.split('\n').filter(line => line.trim());
+            const nutrition = parseNutritionFromText(textLines);
+            
+            if (Object.keys(nutrition).length === 0) {
+                alert('No nutrition information found in the scanned text.');
+                return;
+            }
+            
+            nutritionData = formatNutritionDisplay(nutrition);
+            displayNutrition(nutritionData);
+        }
+        
+        // Display nutrition facts
+        function displayNutrition(data) {
+            const summary = data.summary;
+            const score = Math.round(data.fitness_score);
+            
+            let html = `
+                <div class="fitness-score">
+                    <div class="score">${score}</div>
+                    <div>Fitness Score</div>
+                </div>
+                
+                <div class="nutrition-facts">
+                    <h3>Nutrition Facts</h3>
+                    <div class="serving-info">
+                        ${data.raw.serving_size ? `<div>Serving Size: ${data.raw.serving_size}</div>` : ''}
+                        ${data.raw.servings_per_container ? `<div>Servings Per Container: ${data.raw.servings_per_container}</div>` : ''}
+                    </div>
+                    
+                    ${summary.calories ? `
+                    <div class="calories">
+                        <div><strong>Calories</strong> <span class="amount">${summary.calories}</span></div>
+                    </div>
+                    ` : ''}
+                    
+                    ${summary.fat ? `<div class="nutrient-row"><span class="label">Total Fat</span><span>${summary.fat}g</span></div>` : ''}
+                    ${data.raw.saturated_fat ? `<div class="nutrient-row"><span class="label">&nbsp;&nbsp;Saturated Fat</span><span>${data.raw.saturated_fat}g</span></div>` : ''}
+                    ${data.raw.trans_fat !== undefined ? `<div class="nutrient-row"><span class="label">&nbsp;&nbsp;Trans Fat</span><span>${data.raw.trans_fat}g</span></div>` : ''}
+                    ${data.raw.cholesterol ? `<div class="nutrient-row"><span class="label">Cholesterol</span><span>${data.raw.cholesterol}mg</span></div>` : ''}
+                    ${summary.sodium ? `<div class="nutrient-row"><span class="label">Sodium</span><span>${summary.sodium}mg</span></div>` : ''}
+                    ${summary.carbs ? `<div class="nutrient-row"><span class="label">Total Carbohydrate</span><span>${summary.carbs}g</span></div>` : ''}
+                    ${summary.fiber ? `<div class="nutrient-row"><span class="label">&nbsp;&nbsp;Dietary Fiber</span><span>${summary.fiber}g</span></div>` : ''}
+                    ${summary.sugars ? `<div class="nutrient-row"><span class="label">&nbsp;&nbsp;Sugars</span><span>${summary.sugars}g</span></div>` : ''}
+                    ${summary.protein ? `<div class="nutrient-row thick-border"><span class="label">Protein</span><span>${summary.protein}g</span></div>` : ''}
+                </div>
+            `;
+            
+            document.getElementById('nutrition-display').innerHTML = html;
+            document.getElementById('nutrition-section').style.display = 'block';
+        }
+        
+        // Get alternatives from server
+        async function getAlternatives(userType) {
+            if (!nutritionData) {
+                alert('Please extract nutrition facts first!');
+                return;
+            }
+            
+            document.getElementById('loading').style.display = 'block';
+            
+            try {
+                // Create FormData object
+                const formData = new FormData();
+                formData.append('text', scannedText);
+                formData.append('user_type', userType);
+                
+                const response = await fetch('get-alternatives', {
+                    method: 'POST',
+                    body: formData  // Send as FormData, not URLSearchParams
+                });
+                
+                const data = await response.json();
+                displayAlternatives(data);
+                document.getElementById('loading').style.display = 'none';
+            } catch (error) {
+                alert('Error fetching alternatives: ' + error.message);
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+        
+        // Get lower sodium alternatives
+        async function getLowerSodium() {
+            if (!nutritionData || !nutritionData.summary.sodium) {
+                alert('Please extract nutrition facts with sodium information first!');
+                return;
+            }
+            
+            document.getElementById('loading').style.display = 'block';
+            
+            try {
+                // Create FormData object
+                const formData = new FormData();
+                formData.append('text', scannedText);
+                
+                const response = await fetch('get-lower-sodium', {
+                    method: 'POST',
+                    body: formData  // Send as FormData
+                });
+                
+                const data = await response.json();
+                displayAlternatives(data);
+                document.getElementById('loading').style.display = 'none';
+            } catch (error) {
+                alert('Error fetching alternatives: ' + error.message);
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+        
+        // Display alternatives
+        function displayAlternatives(data) {
+            let html = '';
+            
+            if (data.message) {
+                html = `<p>${data.message}</p>`;
+            } else if (data.alternatives && data.alternatives.length > 0) {
+                html = data.alternatives.map(alt => `
+                    <div class="alternative-item">
+                        <h4>${alt.name}</h4>
+                        <div>Calories: ${alt.calories || 'N/A'} | Protein: ${alt.protein || 'N/A'}g | Sodium: ${alt.sodium || 'N/A'}mg</div>
+                        <div class="improvement">${alt.improvement}</div>
+                    </div>
+                `).join('');
+            }
+            
+            document.getElementById('alternatives-display').innerHTML = html;
+            document.getElementById('alternatives-section').style.display = 'block';
+        }
+        
+        // Clear functions
+        function clearText() {
+            scannedText = '';
+            document.getElementById('text-section').style.display = 'none';
+        }
+        
+        function clearNutrition() {
+            nutritionData = null;
+            document.getElementById('nutrition-section').style.display = 'none';
+        }
+        
+        function clearAlternatives() {
+            document.getElementById('alternatives-section').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

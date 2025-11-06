@@ -1,10 +1,9 @@
-<!-- TAGS INPUT FORM - Save as tags_input.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Tag - LabelLift</title>
+    <title>Add Nutrition Facts - LabelLift</title>
     <link rel="stylesheet" type="text/css" href="/style.css">
     <style>
         .form-container {
@@ -68,17 +67,45 @@
     </nav>
 
     <div class="form-container">
-        <h1>Add New Tag</h1>
-        <form method="POST" action="/tags/add">
+        <h1>Add Nutrition Facts</h1>
+        <form method="POST" action="/nutrition/add">
             <div class="form-group">
-                <label for="tag_name">Tag Name:</label>
-                <input type="text" id="tag_name" name="tag_name" required>
+                <label for="product_id">Product ID:</label>
+                <input type="number" id="product_id" name="product_id" required>
             </div>
             <div class="form-group">
-                <label for="tag_type">Tag Type:</label>
-                <input type="text" id="tag_type" name="tag_type" required>
+                <label for="calorie">Calories:</label>
+                <input type="number" id="calorie" name="calorie" required>
             </div>
-            <button type="submit" class="btn-submit">Add Tag</button>
+            <div class="form-group">
+                <label for="fats">Fats (g):</label>
+                <input type="number" id="fats" name="fats" step="0.1">
+            </div>
+            <div class="form-group">
+                <label for="sodium">Sodium (mg):</label>
+                <input type="number" id="sodium" name="sodium" step="0.1">
+            </div>
+            <div class="form-group">
+                <label for="sugars">Sugars (g):</label>
+                <input type="number" id="sugars" name="sugars" step="0.1">
+            </div>
+            <div class="form-group">
+                <label for="protein">Protein (g):</label>
+                <input type="number" id="protein" name="protein" step="0.1">
+            </div>
+            <div class="form-group">
+                <label for="dietary_fiber">Dietary Fiber (g):</label>
+                <input type="number" id="dietary_fiber" name="dietary_fiber" step="0.1">
+            </div>
+            <div class="form-group">
+                <label for="fitness_score">Fitness Score:</label>
+                <input type="number" id="fitness_score" name="fitness_score" step="0.1">
+            </div>
+            <div class="form-group">
+                <label for="dietary_restriction">Dietary Restriction:</label>
+                <input type="text" id="dietary_restriction" name="dietary_restriction">
+            </div>
+            <button type="submit" class="btn-submit">Add Nutrition Facts</button>
         </form>
     </div>
 

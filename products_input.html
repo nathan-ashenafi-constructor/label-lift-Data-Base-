@@ -1,10 +1,9 @@
-<!-- TAGS INPUT FORM - Save as tags_input.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Tag - LabelLift</title>
+    <title>Add Product - LabelLift</title>
     <link rel="stylesheet" type="text/css" href="/style.css">
     <style>
         .form-container {
@@ -68,17 +67,29 @@
     </nav>
 
     <div class="form-container">
-        <h1>Add New Tag</h1>
-        <form method="POST" action="/tags/add">
+        <h1>Add New Product</h1>
+        <form method="POST" action="/products/add">
             <div class="form-group">
-                <label for="tag_name">Tag Name:</label>
-                <input type="text" id="tag_name" name="tag_name" required>
+                <label for="name">Product Name:</label>
+                <input type="text" id="name" name="name" required>
             </div>
             <div class="form-group">
-                <label for="tag_type">Tag Type:</label>
-                <input type="text" id="tag_type" name="tag_type" required>
+                <label for="barcode">Barcode:</label>
+                <input type="text" id="barcode" name="barcode" required>
             </div>
-            <button type="submit" class="btn-submit">Add Tag</button>
+            <div class="form-group">
+                <label for="size_of_serving">Serving Size:</label>
+                <input type="text" id="size_of_serving" name="size_of_serving">
+            </div>
+            <div class="form-group">
+                <label for="category_id">Category ID:</label>
+                <input type="number" id="category_id" name="category_id" required>
+            </div>
+            <div class="form-group">
+                <label for="brand_id">Brand ID:</label>
+                <input type="number" id="brand_id" name="brand_id" required>
+            </div>
+            <button type="submit" class="btn-submit">Add Product</button>
         </form>
     </div>
 

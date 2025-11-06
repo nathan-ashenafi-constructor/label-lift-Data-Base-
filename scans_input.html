@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Product - LabelLift</title>
-    <link rel="stylesheet" type="text/css" href="style.css">
+    <title>Add Scan - LabelLift</title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
     <style>
         .form-container {
             max-width: 600px;
@@ -56,40 +56,28 @@
     <nav class="navbar">
         <div class="container">
             <div class="nav-brand">
-                <img src="img/logo.png" alt="LabelLift Logo" class="logo">
+                <img src="/img/logo.png" alt="LabelLift Logo" class="logo">
                 <span class="brand-name">LabelLift</span>
             </div>
             <ul class="nav-links">
-                <li><a href="index.html">Home</a></li>
-                <li><a href="maintenance.html">Maintenance</a></li>
+                <li><a href="/index.html">Home</a></li>
+                <li><a href="/maintenance.html">Maintenance</a></li>
             </ul>
         </div>
     </nav>
 
     <div class="form-container">
-        <h1>Add New Product</h1>
-        <form method="POST" action="/products/add">
+        <h1>Add Scan</h1>
+        <form method="POST" action="/scans/add">
             <div class="form-group">
-                <label for="name">Product Name:</label>
-                <input type="text" id="name" name="name" required>
+                <label for="user_id">User ID:</label>
+                <input type="number" id="user_id" name="user_id" required>
             </div>
             <div class="form-group">
-                <label for="barcode">Barcode:</label>
-                <input type="text" id="barcode" name="barcode" required>
+                <label for="product_id">Product ID:</label>
+                <input type="number" id="product_id" name="product_id" required>
             </div>
-            <div class="form-group">
-                <label for="size_of_serving">Serving Size:</label>
-                <input type="text" id="size_of_serving" name="size_of_serving">
-            </div>
-            <div class="form-group">
-                <label for="category_id">Category ID:</label>
-                <input type="number" id="category_id" name="category_id" required>
-            </div>
-            <div class="form-group">
-                <label for="brand_id">Brand ID:</label>
-                <input type="number" id="brand_id" name="brand_id" required>
-            </div>
-            <button type="submit" class="btn-submit">Add Product</button>
+            <button type="submit" class="btn-submit">Add Scan</button>
         </form>
     </div>
 
